@@ -1,7 +1,9 @@
 package com.pedromolon.QuickshopBasketService.controller;
 
 import com.pedromolon.QuickshopBasketService.dto.request.BasketRequest;
+import com.pedromolon.QuickshopBasketService.dto.request.PaymentRequest;
 import com.pedromolon.QuickshopBasketService.entity.Basket;
+import com.pedromolon.QuickshopBasketService.entity.enums.PaymentMethod;
 import com.pedromolon.QuickshopBasketService.service.BasketService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,11 @@ public class BasketController {
     @PutMapping("/{id}")
     public ResponseEntity<Basket> updateBasket(@PathVariable String id, @RequestBody BasketRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(basketService.updateBasket(id, request));
+    }
+
+    @PutMapping("/{id}/payment")
+    public ResponseEntity<Basket> payBasket(@PathVariable String id, @RequestBody PaymentRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(basketService.payBasket(id, request));
     }
 
 }

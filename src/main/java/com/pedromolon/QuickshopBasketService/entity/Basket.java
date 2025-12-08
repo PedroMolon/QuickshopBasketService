@@ -1,5 +1,7 @@
 package com.pedromolon.QuickshopBasketService.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.pedromolon.QuickshopBasketService.entity.enums.PaymentMethod;
 import com.pedromolon.QuickshopBasketService.entity.enums.Status;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,6 +26,9 @@ public class Basket {
     private List<Product> products;
 
     private Status status;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private PaymentMethod paymentMethod;
 
     public void calculateTotalPrice() {
         this.totalPrice = products

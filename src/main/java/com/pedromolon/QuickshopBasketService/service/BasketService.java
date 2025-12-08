@@ -2,6 +2,7 @@ package com.pedromolon.QuickshopBasketService.service;
 
 import com.pedromolon.QuickshopBasketService.client.response.PlatziProductResponse;
 import com.pedromolon.QuickshopBasketService.dto.request.BasketRequest;
+import com.pedromolon.QuickshopBasketService.dto.request.PaymentRequest;
 import com.pedromolon.QuickshopBasketService.entity.Basket;
 import com.pedromolon.QuickshopBasketService.entity.Product;
 import com.pedromolon.QuickshopBasketService.entity.enums.Status;
@@ -71,6 +72,15 @@ public class BasketService {
         basket.setProducts(productList);
         basket.calculateTotalPrice();
         return basketRepository.save(basket);
+    }
+
+    public Basket payBasket(String id, PaymentRequest request) {
+        Basket savedBasket = getBasketId(id);
+
+        savedBasket.setPaymentMethod(request.method());
+        savedBasket.setStatus(Status.SOLD);
+
+        return basketRepository.save(savedBasket);
     }
 
 }
