@@ -6,6 +6,8 @@ import com.pedromolon.QuickshopBasketService.dto.request.PaymentRequest;
 import com.pedromolon.QuickshopBasketService.entity.Basket;
 import com.pedromolon.QuickshopBasketService.entity.Product;
 import com.pedromolon.QuickshopBasketService.entity.enums.Status;
+import com.pedromolon.QuickshopBasketService.exceptions.BusinessException;
+import com.pedromolon.QuickshopBasketService.exceptions.DataNotFoundException;
 import com.pedromolon.QuickshopBasketService.repository.BasketRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +22,7 @@ public class BasketService {
 
     public Basket getBasketId(String id) {
         return basketRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Basket not found"));
+                .orElseThrow(() -> new DataNotFoundException("Basket not found"));
     }
 
     public BasketService(BasketRepository basketRepository, ProductService productService) {
@@ -31,19 +33,10 @@ public class BasketService {
     public Basket createBasket(BasketRequest request) {
         basketRepository.findByClientAndStatus(request.clientId(), Status.OPEN)
             .ifPresent(basket -> {
-                throw new IllegalArgumentException("There is already an open basket for this client");
+                throw new BusinessException("There is already an open basket for this client");
             });
 
-        List<Product> productList = new ArrayList<>();
-        request.products().forEach(product -> {
-            PlatziProductResponse response = productService.getProductById(product.id());
-            productList.add(Product.builder()
-                    .id(response.id())
-                    .title(response.title())
-                    .price(response.price())
-                    .quantity(product.quantity())
-                    .build());
-        });
+        List<Product> productList = getProductList(request);
 
         Basket basket = Basket.builder()
                 .client(request.clientId())
@@ -55,19 +48,24 @@ public class BasketService {
         return basketRepository.save(basket);
     }
 
-    public Basket updateBasket(String id, BasketRequest request) {
-        Basket basket = getBasketId(id);
-
+    private List<Product> getProductList(BasketRequest request) {
         List<Product> productList = new ArrayList<>();
-        request.products().forEach(productRequest -> {
-            PlatziProductResponse response = productService.getProductById(productRequest.id());
+        request.products().forEach(product -> {
+            PlatziProductResponse response = productService.getProductById(product.id());
             productList.add(Product.builder()
                     .id(response.id())
                     .title(response.title())
                     .price(response.price())
-                    .quantity(productRequest.quantity())
+                    .quantity(product.quantity())
                     .build());
         });
+        return productList;
+    }
+
+    public Basket updateBasket(String id, BasketRequest request) {
+        Basket basket = getBasketId(id);
+
+        List<Product> productList = getProductList(request);
 
         basket.setProducts(productList);
         basket.calculateTotalPrice();
